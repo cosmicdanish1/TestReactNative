@@ -5,114 +5,55 @@
  * @format
  */
 
-import React from 'react';
+import React,{ useEffect } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import JobsScreen from './src/screens/JobsScreen';
+import BookmarksScreen from './src/screens/BookmarksScreen';
+import { initDatabase } from './src/database/database';
+import { RootStackParamList,RootTabParamList} from './src/types';
+import JobDetailScreen from './src/screens/JobDetailScreen';
 import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+const Tab = createBottomTabNavigator<RootTabParamList>();
+const Stack = createStackNavigator<RootStackParamList>();
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+const JobsStack = () => (
+  <Stack.Navigator>
+    <Stack.Screen name="JobsList" component={JobsScreen} options={{ title: 'Jobs' }} />
+    <Stack.Screen name="JobDetail" component={JobDetailScreen} options={{ title: 'Job Details' }} />
+  </Stack.Navigator>
+);
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+const App: React.FC = () => {
+  useEffect(() => {
+    initDatabase();
+  }, []);
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <NavigationContainer>
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          tabBarIcon: ({ focused, color, size }) => {
+            let iconName: string;
+            if (route.name === 'Jobs') {
+              iconName = focused ? 'work' : 'work-outline';
+            } else if (route.name === 'Bookmarks') {
+              iconName = focused ? 'bookmark' : 'bookmark-border';
+            } else {
+              iconName = 'error';
+            }
+            return <Icon name={iconName} size={size} color={color} />;
+          },
+        })}
+      >
+        <Tab.Screen name="Jobs" component={JobsStack} />
+        <Tab.Screen name="Bookmarks" component={BookmarksScreen} />
+      </Tab.Navigator>
+    </NavigationContainer>
   );
-}
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
+};
 
 export default App;
